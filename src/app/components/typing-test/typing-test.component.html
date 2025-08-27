@@ -1,0 +1,136 @@
+<div class="min-h-screen bg-gray-50 transition-colors duration-200 dark:bg-gray-900">
+    <!-- Header -->
+    <header class="border-b border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center">
+                    <button (click)="stopTest()" class="flex items-center text-gray-600 transition-colors duration-200 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+                        <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Home
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <!-- Progress -->
+                    <div class="text-center">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Progress</div>
+                        <div class="text-lg font-bold text-gray-900 dark:text-white">{{ getProgressPercentage() | number: '1.0-0' }}%</div>
+                    </div>
+
+                    <!-- Timer -->
+                    <div class="text-center">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Time Left</div>
+                        <div
+                            class="text-lg font-bold"
+                            [class.text-red-600]="timeRemaining <= 10"
+                            [class.text-gray-900]="timeRemaining > 10"
+                            [class.dark:text-red-400]="timeRemaining <= 10"
+                            [class.dark:text-white]="timeRemaining > 10"
+                        >
+                            {{ getTimeDisplay() }}
+                        </div>
+                    </div>
+
+                    <!-- Current WPM -->
+                    <div class="text-center">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">WPM</div>
+                        <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
+                            {{ getCurrentWPM() }}
+                        </div>
+                    </div>
+
+                    <!-- Accuracy -->
+                    <div class="text-center">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Accuracy</div>
+                        <div class="text-lg font-bold text-green-600 dark:text-green-400">{{ getCurrentAccuracy() }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                <div class="h-2 rounded-full bg-blue-600 transition-all duration-300 ease-out" [style.width.%]="getProgressPercentage()"></div>
+            </div>
+        </div>
+
+        <!-- Test Instructions -->
+        <div *ngIf="!isTestActive && testConfig" class="mb-8 animate-fade-in text-center">
+            <div class="card">
+                <h2 class="mb-4 font-roboto-slab text-2xl font-bold text-gray-900 dark:text-white">Get Ready to Type!</h2>
+                <p class="mb-6 text-gray-600 dark:text-gray-300">Press any key to start the test. Type the text below as accurately and quickly as you can.</p>
+                <div class="flex justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div class="flex items-center">
+                        <span class="mr-2">⌨️</span>
+                        <span>Type to start</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-2">⏱️</span>
+                        <span>{{ testConfig.duration }} seconds</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-2">🚫</span>
+                        <span>ESC to quit</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Complete Message -->
+        <div *ngIf="currentResult" class="mb-8 animate-fade-in text-center">
+            <div class="card border-green-200 bg-gradient-to-r from-green-50 to-blue-50 dark:border-green-800 dark:from-green-900/20 dark:to-blue-900/20">
+                <h2 class="mb-4 font-roboto-slab text-2xl font-bold text-gray-900 dark:text-white">Test Complete! 🎉</h2>
+                <p class="text-gray-600 dark:text-gray-300">Redirecting to results...</p>
+            </div>
+        </div>
+
+        <!-- Typing Area -->
+        <div class="card flex min-h-[300px] items-center justify-center">
+            <div *ngIf="testConfig" class="w-full">
+                <!-- Text Display -->
+                <div class="font-roboto-slab text-xl leading-relaxed text-gray-700 dark:text-gray-300">
+                    <span *ngFor="let word of formatText(); let i = index" [class]="word.classes" class="mb-2 mr-2 inline-block">
+                        <span *ngFor="let char of word.text; let j = index" [class]="getCharClass(i, j)" class="inline-block">
+                            {{ char }}
+                        </span>
+                    </span>
+                </div>
+
+                <!-- Cursor -->
+                <div *ngIf="isTestActive && typingStats" class="inline-block h-6 w-0.5 animate-pulse-slow bg-blue-600 dark:bg-blue-400"></div>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="!testConfig" class="text-center">
+                <div class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                <p class="text-gray-600 dark:text-gray-400">Loading test...</p>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-8 text-center">
+            <div class="rounded-xl bg-gray-100 p-4 dark:bg-gray-800">
+                <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Instructions</h3>
+                <div class="grid grid-cols-1 gap-4 text-sm text-gray-600 dark:text-gray-400 md:grid-cols-3">
+                    <div class="flex items-center justify-center">
+                        <span class="mr-2">⌨️</span>
+                        <span>Type the highlighted text</span>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <span class="mr-2">✅</span>
+                        <span>Green = correct, Red = error</span>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <span class="mr-2">⏱️</span>
+                        <span>Timer counts down automatically</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

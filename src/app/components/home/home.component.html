@@ -1,0 +1,205 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <!-- Header -->
+  <header class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-6">
+        <div class="flex items-center">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white font-roboto-slab">
+            NexiType
+          </h1>
+          <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">Typing Practice</span>
+        </div>
+        
+        <!-- Theme Toggle -->
+        <button
+          (click)="toggleTheme()"
+          class="p-2 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+          [attr.aria-label]="theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'"
+        >
+          <svg *ngIf="theme === 'light'" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+          <svg *ngIf="theme === 'dark'" class="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Welcome Section -->
+    <div class="text-center mb-12 animate-fade-in">
+      <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4 font-roboto-slab">
+        Improve Your Typing Speed
+      </h2>
+      <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        Practice typing with random texts, custom content, or daily challenges. Track your progress and unlock achievements.
+      </p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <!-- Current Streak -->
+      <div class="card animate-slide-up">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Current Streak</p>
+            <p class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ currentStreak }}</p>
+          </div>
+          <div class="text-3xl">🔥</div>
+        </div>
+      </div>
+
+      <!-- Total Tests -->
+      <div class="card animate-slide-up">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tests Completed</p>
+            <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ personalBests.length }}</p>
+          </div>
+          <div class="text-3xl">📊</div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="card animate-slide-up">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Achievements</p>
+            <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ unlockedAchievements.length }}</p>
+          </div>
+          <div class="text-3xl">🏆</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Options -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      <!-- Quick Start -->
+      <div class="card">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 font-roboto-slab">Quick Start</h3>
+        
+        <!-- Duration Selection -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Test Duration</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              *ngFor="let duration of testDurations"
+              (click)="selectedDuration = duration.value"
+              class="py-3 px-4 rounded-xl border-2 transition-all duration-200 font-medium"
+              [class.border-blue-500]="selectedDuration === duration.value"
+              [class.bg-blue-50]="selectedDuration === duration.value"
+              [class.dark:bg-blue-900/20]="selectedDuration === duration.value"
+              [class.border-gray-300]="selectedDuration !== duration.value"
+              [class.dark:border-gray-600]="selectedDuration !== duration.value"
+            >
+              {{ duration.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Text Option -->
+        <div class="mb-6">
+          <button
+            (click)="toggleCustomTextInput()"
+            class="btn-secondary w-full mb-3"
+          >
+            {{ showCustomTextInput ? 'Use Random Text' : 'Paste Custom Text' }}
+          </button>
+          
+          <div *ngIf="showCustomTextInput" class="animate-slide-up">
+            <textarea
+              [(ngModel)]="customText"
+              placeholder="Paste your custom text here..."
+              class="input-field h-32 resize-none"
+              rows="4"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Start Button -->
+        <button
+          (click)="startTest()"
+          class="btn-primary w-full text-lg py-4"
+        >
+          Start Typing Test
+        </button>
+      </div>
+
+      <!-- Daily Challenge -->
+      <div class="card">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 font-roboto-slab">Daily Challenge</h3>
+        <div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-6">
+          <p class="text-gray-700 dark:text-gray-300 italic mb-4">
+            "{{ dailyChallenge }}"
+          </p>
+          <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+            <span class="mr-2">🎯</span>
+            <span>1 minute challenge</span>
+          </div>
+        </div>
+        <button
+          (click)="startDailyChallenge()"
+          class="btn-primary w-full text-lg py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+        >
+          Take Daily Challenge
+        </button>
+      </div>
+    </div>
+
+    <!-- Personal Bests -->
+    <div class="card mb-12">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 font-roboto-slab">Personal Bests</h3>
+      
+      <div *ngIf="personalBests.length === 0" class="text-center py-8">
+        <div class="text-6xl mb-4">🚀</div>
+        <p class="text-gray-600 dark:text-gray-400">Complete your first test to see your personal bests here!</p>
+      </div>
+      
+      <div *ngIf="personalBests.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          *ngFor="let duration of testDurations"
+          class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4"
+        >
+          <h4 class="font-semibold text-gray-900 dark:text-white mb-2">{{ getDurationLabel(duration.value) }}</h4>
+          <div *ngIf="getPersonalBestForDuration(duration.value); else noBest" class="space-y-1">
+            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              {{ getPersonalBestForDuration(duration.value)?.wpm }} WPM
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              {{ getPersonalBestForDuration(duration.value)?.accuracy }}% accuracy
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">
+              {{ formatDate(getPersonalBestForDuration(duration.value)?.date!) }}
+            </p>
+          </div>
+          <ng-template #noBest>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">No record yet</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Achievements -->
+    <div class="card" *ngIf="unlockedAchievements.length > 0">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 font-roboto-slab">Recent Achievements</h3>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          *ngFor="let achievement of unlockedAchievements.slice(0, 8)"
+          class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-4 border border-yellow-200 dark:border-yellow-800"
+        >
+          <div class="flex items-center mb-2">
+            <span class="text-2xl mr-2">{{ achievement.icon }}</span>
+            <h4 class="font-semibold text-gray-900 dark:text-white">{{ achievement.title }}</h4>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-300">{{ achievement.description }}</p>
+          <p *ngIf="achievement.unlockedDate" class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            {{ formatDate(achievement.unlockedDate) }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

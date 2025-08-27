@@ -1,0 +1,175 @@
+<div class="min-h-screen bg-gray-50 transition-colors duration-200 dark:bg-gray-900">
+    <!-- Header -->
+    <header class="border-b border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-6">
+                <div class="flex items-center">
+                    <h1 class="font-roboto-slab text-3xl font-bold text-gray-900 dark:text-white">Test Results</h1>
+                </div>
+
+                <button (click)="startNewTest()" class="btn-primary">Back to Home</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        <!-- Performance Message -->
+        <div class="mb-8 animate-fade-in text-center">
+            <div class="card border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 dark:border-blue-800 dark:from-blue-900/20 dark:to-purple-900/20">
+                <h2 class="mb-4 font-roboto-slab text-3xl font-bold text-gray-900 dark:text-white">
+                    {{ getPerformanceMessage() }}
+                </h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">{{ formatDate(result?.date!) }} • {{ formatTime(result?.timeElapsed!) }}</p>
+            </div>
+        </div>
+
+        <!-- Main Results -->
+        <div class="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <!-- Current Results -->
+            <div class="card">
+                <h3 class="mb-6 font-roboto-slab text-2xl font-bold text-gray-900 dark:text-white">Your Results</h3>
+
+                <div class="space-y-6">
+                    <!-- WPM -->
+                    <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4 dark:bg-gray-700">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Words Per Minute</p>
+                            <p class="text-3xl font-bold" [class]="getWPMColor()">{{ result?.wpm }}</p>
+                        </div>
+                        <div class="text-4xl">⚡</div>
+                    </div>
+
+                    <!-- Accuracy -->
+                    <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4 dark:bg-gray-700">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Accuracy</p>
+                            <p class="text-3xl font-bold" [class]="getAccuracyColor()">{{ result?.accuracy }}%</p>
+                        </div>
+                        <div class="text-4xl">🎯</div>
+                    </div>
+
+                    <!-- Characters -->
+                    <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4 dark:bg-gray-700">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Characters Typed</p>
+                            <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ result?.totalCharacters }}</p>
+                        </div>
+                        <div class="text-4xl">⌨️</div>
+                    </div>
+
+                    <!-- Errors -->
+                    <div class="flex items-center justify-between rounded-xl bg-gray-50 p-4 dark:bg-gray-700">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Errors</p>
+                            <p class="text-3xl font-bold text-red-600 dark:text-red-400">{{ result?.errors }}</p>
+                        </div>
+                        <div class="text-4xl">❌</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Best Comparison -->
+            <div class="card">
+                <h3 class="mb-6 font-roboto-slab text-2xl font-bold text-gray-900 dark:text-white">
+                    Personal Best
+                    <span *ngIf="isNewPersonalBest" class="ml-2 rounded-full bg-green-100 px-2 py-1 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-200"> NEW! 🎉 </span>
+                </h3>
+
+                <div *ngIf="personalBest; else noPersonalBest" class="space-y-6">
+                    <!-- Personal Best WPM -->
+                    <div
+                        class="flex items-center justify-between rounded-xl border border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 dark:border-yellow-800 dark:from-yellow-900/20 dark:to-orange-900/20"
+                    >
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Best WPM</p>
+                            <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ personalBest.wpm }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ formatDate(personalBest.date) }}</p>
+                        </div>
+                        <div class="text-4xl">🏆</div>
+                    </div>
+
+                    <!-- Personal Best Accuracy -->
+                    <div
+                        class="flex items-center justify-between rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 p-4 dark:border-green-800 dark:from-green-900/20 dark:to-blue-900/20"
+                    >
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Best Accuracy</p>
+                            <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ personalBest.accuracy }}%</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ formatDate(personalBest.date) }}</p>
+                        </div>
+                        <div class="text-4xl">💎</div>
+                    </div>
+
+                    <!-- Improvement -->
+                    <div *ngIf="result && personalBest && result.wpm > personalBest.wpm" class="rounded-xl border border-green-200 bg-green-100 p-4 dark:border-green-800 dark:bg-green-900/20">
+                        <div class="flex items-center">
+                            <div class="mr-3 text-2xl">🚀</div>
+                            <div>
+                                <p class="font-semibold text-green-800 dark:text-green-200">WPM Improved!</p>
+                                <p class="text-sm text-green-700 dark:text-green-300">+{{ result.wpm - personalBest.wpm }} WPM better than your previous best!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <ng-template #noPersonalBest>
+                    <div class="py-8 text-center">
+                        <div class="mb-4 text-6xl">🎯</div>
+                        <p class="text-gray-600 dark:text-gray-400">This is your first test! Keep practicing to set personal bests.</p>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+
+        <!-- Achievements -->
+        <div *ngIf="unlockedAchievements.length > 0" class="card mb-8">
+            <h3 class="mb-6 font-roboto-slab text-2xl font-bold text-gray-900 dark:text-white">Achievements</h3>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div
+                    *ngFor="let achievement of unlockedAchievements"
+                    class="rounded-xl border border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 dark:border-yellow-800 dark:from-yellow-900/20 dark:to-orange-900/20"
+                >
+                    <div class="mb-2 flex items-center">
+                        <span class="mr-2 text-2xl">{{ achievement.icon }}</span>
+                        <h4 class="font-semibold text-gray-900 dark:text-white">{{ achievement.title }}</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">{{ achievement.description }}</p>
+                    <p *ngIf="achievement.unlockedDate" class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                        {{ formatDate(achievement.unlockedDate) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col justify-center gap-4 sm:flex-row">
+            <button (click)="restartTest()" class="btn-primary px-8 py-4 text-lg">Try Again</button>
+
+            <button (click)="startNewTest()" class="btn-secondary px-8 py-4 text-lg">New Test</button>
+        </div>
+
+        <!-- Tips -->
+        <div class="card mt-12">
+            <h3 class="mb-4 font-roboto-slab text-xl font-bold text-gray-900 dark:text-white">Tips to Improve</h3>
+            <div class="grid grid-cols-1 gap-4 text-sm text-gray-600 dark:text-gray-300 md:grid-cols-2">
+                <div class="flex items-start">
+                    <span class="mr-2 mt-1">💡</span>
+                    <p>Practice regularly to build muscle memory and improve speed</p>
+                </div>
+                <div class="flex items-start">
+                    <span class="mr-2 mt-1">🎯</span>
+                    <p>Focus on accuracy first, speed will come naturally</p>
+                </div>
+                <div class="flex items-start">
+                    <span class="mr-2 mt-1">⌨️</span>
+                    <p>Use proper finger placement on the home row keys</p>
+                </div>
+                <div class="flex items-start">
+                    <span class="mr-2 mt-1">🔥</span>
+                    <p>Maintain a daily streak to stay motivated</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
